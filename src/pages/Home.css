@@ -1,0 +1,556 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background: #E6F0FA;
+  color: #333;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+.home-page {
+  min-height: 100vh;
+  overflow: visible;
+}
+
+/* Navbar */
+.navbar {
+  position: sticky;
+  top: 0;
+  background: #E6F0FA;
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.nav-left {
+  display: flex;
+  gap: 20px;
+}
+
+.navbar a {
+  margin: 0 10px;
+  text-decoration: none;
+  font-weight: 500;
+  color: #0077cc;
+  transition: color 0.3s;
+  padding: 8px 16px;
+  border-radius: 5px;
+}
+
+.navbar a:hover {
+  color: #00b386;
+  background: rgba(0, 179, 134, 0.1);
+}
+
+.logo {
+  height: 40px;
+}
+
+/* Hero: Adjusted Size & Centering */
+.hero {
+  text-align: center;
+  padding: 10px 20px;
+  background: linear-gradient(120deg, #1e90ff, #32cd32);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 25vh;              /* 👈 hero ki height fix ki gayi */
+  min-height: 200px;         /* 👈 optional fallback for small screens */
+  width: 100%;               /* ensures full width */
+  overflow: hidden;          /* prevent extra content overflow */
+}
+
+
+/* Container for Hero text to limit its width */
+.hero-content {
+  max-width: 1000px;
+  /* Adjust this value to control the hero content width */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  /* Align text content to the start (left) */
+  text-align: left;
+  /* Align text within the content container */
+}
+
+.hero h1 {
+  font-size: 2.8rem;
+  margin-bottom: 10px;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  /* Removed justify-content: center to align left within the hero-content box */
+  font-weight: 600;
+}
+
+.subtext {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+/* Search Section */
+.search-section {
+  text-align: center;
+  padding: 30px 10px;
+  background-color: #E6F0FA;
+  border-radius: 29px;
+  margin: 20px auto;
+  width: 85%;
+}
+
+.search-section h2 {
+  font-size: 1.8rem;
+  margin-bottom: 15px;
+  color: #0a3d62;
+}
+
+#city-search {
+  padding: 14px 20px;
+  width: 500px;
+  max-width: 90%;
+  border: 3px solid transparent;
+  border-radius: 30px;
+  font-size: 1.1rem;
+  transition: all 0.4s ease;
+  background-image: linear-gradient(white, white),
+    linear-gradient(90deg, #1e90ff, #32cd32);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+#city-search:focus {
+  outline: none;
+  box-shadow: 0 0 15px rgba(30, 144, 255, 0.6),
+    0 0 20px rgba(50, 205, 50, 0.5);
+}
+
+.suggestions {
+  list-style: none;
+  margin-top: 10px;
+  padding: 0;
+  background: #fff;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.suggestions li {
+  padding: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.suggestions li:hover {
+  background: #f0f0f0;
+}
+
+/* Health Section */
+.health-section {
+  background-color: #E6F0FA;
+  padding: 60px 20px;
+  border-radius: 10px;
+  margin: 30px auto;
+  width: 90%;
+  position: relative;
+}
+
+.health-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(270deg, #1e90ff, #32cd32, #00bfff, #00b386);
+  background-size: 400% 400%;
+  animation: gradientMove 12s ease infinite;
+  z-index: -1;
+  opacity: 0.95;
+  border-radius: 0 0 20px 20px;
+}
+
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.health-section h2 {
+  font-size: 2.5rem;
+  margin-bottom: 50px;
+  font-weight: 700;
+  text-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  color: white;
+}
+
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.health-card {
+  position: relative;
+  height: 280px;
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s ease;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.health-card:hover {
+  transform: translateY(-10px) scale(1.05);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.health-card::after {
+  content: attr(data-issue-name);
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  padding: 20px 10px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  transition: all 0.3s ease;
+}
+
+.health-card:hover::after {
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.95));
+  padding: 25px 10px;
+}
+
+.health-fallback {
+  display: none;
+}
+
+.health-card:not([style*="background-image"]) .health-fallback,
+.health-card[style*="undefined"] .health-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+}
+
+.fallback-icon {
+  font-size: 3rem;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.fallback-text {
+  font-size: 1.3rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Health Tips Section */
+.health-tips-section {
+  background-color: #E6F0FA;
+  padding: 60px 20px;
+  margin: 30px auto;
+  width: 90%;
+  border-radius: 10px;
+  position: relative;
+}
+
+.health-tips-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(270deg, #1e90ff, #32cd32, #00bfff, #00b386);
+  background-size: 400% 400%;
+  animation: gradientMove 12s ease infinite;
+  z-index: -1;
+  opacity: 0.95;
+  border-radius: 0 0 20px 20px;
+}
+
+.health-tips-section h2 {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+  font-weight: 700;
+  text-align: center;
+  color: white;
+}
+
+.section-subtitle {
+  font-size: 1.2rem;
+  color: white;
+  text-align: center;
+  margin-bottom: 50px;
+  opacity: 0.9;
+}
+
+.tips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.tip-card {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 30px;
+  border-radius: 15px;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border: 2px solid transparent;
+}
+
+.tip-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  border-color: #32cd32;
+}
+
+.tip-icon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+}
+
+.tip-card h3 {
+  font-size: 1.4rem;
+  color: #0a3d62;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.tip-card p {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.read-more-btn {
+  background: #1e90ff;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.read-more-btn:hover {
+  background: #1551d1;
+  transform: translateY(-2px);
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.4s ease;
+}
+
+.modal-content {
+  background: #ffffff;
+  border-radius: 15px;
+  padding: 30px;
+  width: 90%;
+  max-width: 600px;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  animation: zoomIn 0.3s ease;
+}
+
+.close {
+  position: absolute;
+  top: 12px;
+  right: 15px;
+  font-size: 28px;
+  font-weight: bold;
+  color: #444;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.close:hover {
+  color: #ff4d4d;
+  transform: scale(1.2);
+}
+
+#modal-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #0d6efd;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.modal-content h3 {
+  font-size: 1.3rem;
+  margin: 15px 0 10px;
+  color: #198754;
+  border-bottom: 2px solid #198754;
+  display: inline-block;
+  padding-bottom: 3px;
+}
+
+#modal-precautions {
+  padding: 0;
+  margin: 10px 0 20px 0;
+}
+
+#modal-precautions li {
+  list-style: none;
+  margin: 8px 0;
+  padding: 10px;
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  color: #fff;
+  font-weight: 500;
+  border-radius: 10px;
+  transition: 0.3s ease;
+}
+
+#modal-precautions li:hover {
+  transform: translateX(8px);
+  background: linear-gradient(135deg, #43e97b, #38f9d7);
+}
+
+#modal-treatment {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #333;
+  background: #f8f9fa;
+  padding: 15px;
+  border-left: 4px solid #0d6efd;
+  border-radius: 8px;
+  animation: fadeSlideUp 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeSlideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Footer: Minimized Height */
+.footer {
+  background: #1e90ff;
+  color: white;
+  text-align: center;
+  padding: 10px 0;
+  /* Minimized vertical padding */
+  margin-top: 0;
+  width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+  }
+
+  .nav-left {
+    gap: 15px;
+  }
+
+  .hero {
+    padding: 60px 20px;
+  }
+
+  .hero h1 {
+    font-size: 2rem;
+  }
+
+  #city-search {
+    width: 90%;
+  }
+
+  .health-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+  }
+
+  .health-card {
+    height: 200px;
+  }
+
+  .tips-grid {
+    grid-template-columns: 1fr;
+  }
+}

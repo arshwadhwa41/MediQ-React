@@ -1,0 +1,12 @@
+.footer {
+  background: linear-gradient(135deg, #2d3748, #4a5568);
+  color: white;
+  text-align: center;
+  padding: 25px 20px;
+  margin-top: auto;
+}
+
+.footer-content p {
+  margin: 5px 0;
+  font-size: 0.9rem;
+}
