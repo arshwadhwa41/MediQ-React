@@ -12,7 +12,7 @@ const Outer = () => {
   const [taglineIndex, setTaglineIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const [typing, setTyping] = useState(true);
-  const [displayText, setDisplayText] = useState("");
+  const [displayText, setDisplayText] = useState('');
 
   // Slowest typing animation
   useEffect(() => {
@@ -23,25 +23,25 @@ const Outer = () => {
         if (charIndex < taglines[taglineIndex].length) {
           setDisplayText(taglines[taglineIndex].substring(0, charIndex + 1));
           setCharIndex(prev => prev + 1);
-          timeoutId = setTimeout(typeTagline, 300); // Slowest typing
+          timeoutId = setTimeout(typeTagline, 4000); // Slowest typing
         } else {
           setTyping(false);
-          timeoutId = setTimeout(typeTagline, 4000); // Long pause
+          timeoutId = setTimeout(typeTagline, 100); // Long pause
         }
       } else {
         if (charIndex > 0) {
           setDisplayText(taglines[taglineIndex].substring(0, charIndex - 1));
           setCharIndex(prev => prev - 1);
-          timeoutId = setTimeout(typeTagline, 150); // Slow deleting
+          timeoutId = setTimeout(typeTagline, 400); // Slow deleting
         } else {
           setTyping(true);
           setTaglineIndex((prev) => (prev + 1) % taglines.length);
-          timeoutId = setTimeout(typeTagline, 1000);
+          timeoutId = setTimeout(typeTagline, 700);
         }
       }
     };
 
-    typeTagline();
+    timeoutId = setTimeout(typeTagline, 100);
 
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
@@ -53,11 +53,6 @@ const Outer = () => {
       {/* ================= HERO SECTION ================= */}
       <section className="hero">
         {/* Top: Animated Tagline */}
-        <div className="hero-top">
-          <div className="hero-tagline">
-            <span id="tagline-text">{displayText}</span>
-          </div>
-        </div>
 
         {/* Main Content - Left Aligned */}
         <div className="hero-content">

@@ -10,7 +10,7 @@ import Bookings from './pages/Bookings';
 
 function App() {
   // Temporary - baad me isko proper authentication se replace karna
-  const isAuthenticated = false; // Default false rakho taaki har koi pehle Outer page dekh sake
+  const isAuthenticated = true; // Default false rakho taaki har koi pehle Outer page dekh sake
 
   return (
     <Router>

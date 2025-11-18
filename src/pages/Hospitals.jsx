@@ -483,7 +483,7 @@ const Hospitals = () => {
       if (charIndex < tagline.length) {
         setTaglineText(tagline.substring(0, charIndex + 1));
         setCharIndex(prev => prev + 1);
-        timeoutId = setTimeout(typeEffect, 80); // Fast typing speed
+        timeoutId = setTimeout(typeEffect, 4000); // Fast typing speed
       }
     };
 

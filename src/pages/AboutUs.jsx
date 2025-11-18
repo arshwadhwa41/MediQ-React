@@ -10,7 +10,7 @@ const AboutUs = () => {
         <div className="nav-left">
           <Link to="/login">Login</Link>
           <Link to="/signup">Signup</Link>
-          <Link to="/">Home</Link>
+          <Link to="/Home">Home</Link>
         </div>
         <div className="nav-right">
           <Link to="/">
@@ -166,7 +166,7 @@ const AboutUs = () => {
             <p>Your Health, Our Priority</p>
           </div>
           <div className="footer-links">
-            <Link to="/">Home</Link>
+            <Link to="/Home">Home</Link>
             <Link to="/hospitals">Hospitals</Link>
             <Link to="/aboutus">About Us</Link>
           </div>

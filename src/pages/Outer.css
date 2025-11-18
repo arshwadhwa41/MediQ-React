@@ -35,7 +35,8 @@ body {
 
 .hero-top {
   display: flex;
-  align-items: center;
+  align-items: left;
+  max-height: 15vh;
 }
 
 .hero-tagline {
@@ -170,7 +171,8 @@ body {
 .footer {
   position: relative;
   min-height: 100vh;
-  background: linear-gradient(135deg, #e3f0ff, #ffffff);
+  /* CHANGED: Yellow background instead of blue gradient */
+  background: #ffcc00;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -188,11 +190,11 @@ body {
 .footer-heading {
   font-size: 32px;
   margin-bottom: 40px;
-  color: var(--blue);
   text-align: left;
+  animation: fade-down 1s ease forwards;
 }
 
-/* Services Grid - NO ANIMATIONS */
+/* Services Grid - WITH TEXT VISIBLE */
 .services-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -207,19 +209,39 @@ body {
   font-size: 18px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
-  border-left: 4px solid var(--blue);
   text-align: left;
-  /* NO OPACITY OR TRANSFORM - DIRECTLY VISIBLE */
-  opacity: 1;
-  transform: translateY(0);
+  
+  /* TEXT VISIBLE AND ANIMATIONS */
+  color: var(--dark);
+  opacity: 0;
+  transform: translateY(50px);
+  animation: fly-up 0.8s ease forwards;
+  
+  /* Ensure text is visible */
+  display: flex;
+  align-items: center;
+  min-height: 80px;
+  font-weight: 500;
 }
+
+/* Add different animation delays for each card */
+.service-card:nth-child(1) { animation-delay: 0.1s; }
+.service-card:nth-child(2) { animation-delay: 0.2s; }
+.service-card:nth-child(3) { animation-delay: 0.3s; }
+.service-card:nth-child(4) { animation-delay: 0.4s; }
+.service-card:nth-child(5) { animation-delay: 0.5s; }
+.service-card:nth-child(6) { animation-delay: 0.6s; }
+.service-card:nth-child(7) { animation-delay: 0.7s; }
+.service-card:nth-child(8) { animation-delay: 0.8s; }
+.service-card:nth-child(9) { animation-delay: 0.9s; }
 
 .service-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-5px) scale(1.02);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, #f8faff, #ffffff);
 }
 
-/* Contact Box - Left Aligned */
+/* Contact Box - WITH ANIMATION */
 .contact-box {
   margin-top: 60px;
   background: white;
@@ -230,9 +252,12 @@ body {
   text-align: left;
   width: 100%;
   max-width: 600px;
-  /* NO ANIMATIONS - DIRECTLY VISIBLE */
-  opacity: 1;
-  transform: translateY(0);
+  
+  /* ANIMATION */
+  opacity: 0;
+  transform: translateY(50px);
+  animation: fade-up 1s ease forwards;
+  animation-delay: 1s;
 }
 
 .contact-box h2 {
@@ -246,6 +271,7 @@ body {
   margin-bottom: 10px;
   color: #555;
   text-align: left;
+  line-height: 1.5;
 }
 
 /* Footer Copy */
@@ -256,10 +282,37 @@ body {
   text-align: center;
 }
 
+/* ========= ANIMATION KEYFRAMES ========= */
+@keyframes fly-up {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-up {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-down {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .hero-content {
     flex-direction: column;
+    text-align: center;
   }
   
   .hero-tagline {
@@ -268,6 +321,15 @@ body {
   
   .hero-text h1 {
     font-size: 28px;
+    text-align: center;
+  }
+  
+  .hero-text p {
+    text-align: center;
+  }
+  
+  .hero-buttons {
+    text-align: center;
   }
   
   .image-flip {
@@ -294,5 +356,10 @@ body {
   .contact-box h2,
   .contact-box p {
     text-align: center;
+  }
+  
+  .service-card {
+    text-align: center;
+    justify-content: center;
   }
 }

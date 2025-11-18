@@ -60,13 +60,12 @@ body {
   text-align: center;
   padding: 10px 20px;
   background: linear-gradient(120deg, #1e90ff, #32cd32);
-  color: white;
+  color: rgb(39, 105, 248);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 25vh;              /* 👈 hero ki height fix ki gayi */
-  min-height: 200px;         /* 👈 optional fallback for small screens */
+  max-height: 15vh;
   width: 100%;               /* ensures full width */
   overflow: hidden;          /* prevent extra content overflow */
 }
@@ -75,20 +74,17 @@ body {
 /* Container for Hero text to limit its width */
 .hero-content {
   max-width: 1000px;
-  /* Adjust this value to control the hero content width */
+  max-height: 15vh;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  /* Align text content to the start (left) */
   text-align: left;
-  /* Align text within the content container */
 }
 
 .hero h1 {
   font-size: 2.8rem;
   margin-bottom: 10px;
-  min-height: 60px;
   display: flex;
   align-items: center;
   /* Removed justify-content: center to align left within the hero-content box */
@@ -161,6 +157,9 @@ body {
 /* Health Section */
 .health-section {
   background-color: #E6F0FA;
+  #hi{
+    color: rgb(18, 128, 254);
+  }
   padding: 60px 20px;
   border-radius: 10px;
   margin: 30px auto;
@@ -287,6 +286,9 @@ body {
 .health-tips-section {
   background-color: #E6F0FA;
   padding: 60px 20px;
+  #hi{
+    color: rgb(18, 128, 254);
+  }
   margin: 30px auto;
   width: 90%;
   border-radius: 10px;
@@ -471,7 +473,119 @@ body {
   border-radius: 8px;
   animation: fadeSlideUp 0.5s ease;
 }
+/* Health Tips Modal Styles */
+.tip-modal-content {
+  max-width: 700px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
 
+.tip-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.tip-modal-icon {
+  font-size: 3rem;
+}
+
+#tip-modal-title {
+  color: #198754;
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.tip-modal-description {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  border-left: 4px solid #198754;
+}
+
+.tip-modal-description p {
+  margin: 0;
+  color: #495057;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.tip-modal-section {
+  margin-bottom: 25px;
+}
+
+.tip-modal-section h3 {
+  color: #0d6efd;
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+  border-bottom: 2px solid #0d6efd;
+  display: inline-block;
+  padding-bottom: 3px;
+}
+
+.tip-modal-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tip-modal-list li {
+  background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+  margin: 8px 0;
+  padding: 12px 15px;
+  border-radius: 8px;
+  border-left: 4px solid #0d6efd;
+  transition: all 0.3s ease;
+  color: #2c3e50;
+}
+
+.tip-modal-list li:hover {
+  transform: translateX(5px);
+  background: linear-gradient(135deg, #bbdefb, #e1bee7);
+}
+
+.tip-modal-recommendation {
+  background: linear-gradient(135deg, #d1ecf1, #d4edda);
+  padding: 20px;
+  border-radius: 10px;
+  border: 2px solid #bee5eb;
+  margin-top: 20px;
+}
+
+.tip-modal-recommendation h3 {
+  color: #0c5460;
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
+
+.tip-modal-recommendation p {
+  color: #155724;
+  font-weight: 500;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Responsive adjustments for tip modal */
+@media (max-width: 768px) {
+  .tip-modal-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+  
+  .tip-modal-content {
+    margin: 20px;
+    max-height: 85vh;
+  }
+  
+  #tip-modal-title {
+    font-size: 1.5rem;
+  }
+}
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -506,16 +620,6 @@ body {
   }
 }
 
-/* Footer: Minimized Height */
-.footer {
-  background: #1e90ff;
-  color: white;
-  text-align: center;
-  padding: 10px 0;
-  /* Minimized vertical padding */
-  margin-top: 0;
-  width: 100%;
-}
 
 /* Responsive */
 @media (max-width: 768px) {

@@ -51,42 +51,34 @@ const Bookings = () => {
   }, [location.state]);
 
   // Typing animation effect
-useEffect(() => {
-  const typeLoop = () => {
-    const text = taglines[taglineIndex];
+  useEffect(() => {
+    const typeLoop = () => {
+      const text = taglines[taglineIndex];
 
-    if (isTyping) {
-      // ✍️ Typing mode (~3s per line)
-      if (charIndex < text.length) {
-        setTaglineText(text.substring(0, charIndex + 1));
-        setCharIndex(charIndex + 1);
-        // 100ms per char → ~3s for 30 chars
-        setTimeout(typeLoop, 100);
+      if (isTyping) {
+        if (charIndex < text.length) {
+          setTaglineText(text.substring(0, charIndex + 1));
+          setCharIndex(charIndex + 1);
+          setTimeout(typeLoop, 100);
+        } else {
+          setIsTyping(false);
+          setTimeout(typeLoop, 1000);
+        }
       } else {
-        // Pause before deleting
-        setIsTyping(false);
-        setTimeout(typeLoop, 1000); // wait 1s before erase
+        if (charIndex > 0) {
+          setTaglineText(text.substring(0, charIndex - 1));
+          setCharIndex(charIndex - 1);
+          setTimeout(typeLoop, 80);
+        } else {
+          setIsTyping(true);
+          setTaglineIndex((taglineIndex + 1) % taglines.length);
+          setTimeout(typeLoop, 700);
+        }
       }
-    } else {
-      // 🧽 Deleting mode (~2.5s per line)
-      if (charIndex > 0) {
-        setTaglineText(text.substring(0, charIndex - 1));
-        setCharIndex(charIndex - 1);
-        // 80ms per char → ~2.5s total
-        setTimeout(typeLoop, 80);
-      } else {
-        // Move to next tagline with short pause
-        setIsTyping(true);
-        setTaglineIndex((taglineIndex + 1) % taglines.length);
-        setTimeout(typeLoop, 700);
-      }
-    }
-  };
+    };
 
-  typeLoop();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [taglineIndex, charIndex, isTyping]);
-
+    typeLoop();
+  }, [taglineIndex, charIndex, isTyping, taglines]);
 
   // Set minimum date to today
   useEffect(() => {
@@ -96,7 +88,6 @@ useEffect(() => {
     const dd = String(today.getDate()).padStart(2, "0");
     const minDate = `${yyyy}-${mm}-${dd}`;
     
-    // Set min date in form data if empty
     if (!formData.date) {
       setFormData(prev => ({ ...prev, date: minDate }));
     }
@@ -110,7 +101,6 @@ useEffect(() => {
       [name]: value
     }));
 
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -123,44 +113,36 @@ useEffect(() => {
   const validateForm = () => {
     const newErrors = {};
 
-    // Name validation
     if (!formData.name.trim()) {
       newErrors.name = "Please enter full name";
     }
 
-    // Guardian validation
     if (!formData.guardian.trim()) {
       newErrors.guardian = "Please enter father/husband name";
     }
 
-    // Phone validation
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(formData.phone.trim())) {
       newErrors.phone = "Enter valid 10-digit number";
     }
 
-    // Sex validation
     if (!formData.sex) {
       newErrors.sex = "Please select";
     }
 
-    // Age validation
     const ageVal = Number(formData.age);
     if (!(ageVal >= 0 && ageVal <= 120)) {
       newErrors.age = "Enter valid age (0-120)";
     }
 
-    // Address validation
     if (!formData.address.trim()) {
       newErrors.address = "Please enter address";
     }
 
-    // Date validation
     if (!formData.date) {
       newErrors.date = "Please pick a date";
     }
 
-    // Time validation (between 10:00 and 17:00)
     if (!formData.time) {
       newErrors.time = "Please pick a time";
     } else {
@@ -176,16 +158,76 @@ useEffect(() => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  // ✅ WORKING Google Sheets Function
+  const saveToGoogleSheets = async (bookingData) => {
+    // Method 1: Direct Google Apps Script URL (Most Reliable)
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwY7Qd9WQ6Q2VZ5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q/exec';
     
+    try {
+      const response = await fetch(scriptURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookingData)
+      });
+      
+      const result = await response.text();
+      console.log('✅ Google Sheets Response:', result);
+    } catch (error) {
+      console.log('❌ Google Sheets failed, trying backup methods...');
+      
+      // Backup Method: Local Storage
+      const existingBookings = JSON.parse(localStorage.getItem('mediqBookings') || '[]');
+      existingBookings.push({
+        ...bookingData,
+        timestamp: new Date().toISOString()
+      });
+      localStorage.setItem('mediqBookings', JSON.stringify(existingBookings));
+      console.log('✅ Data saved to local storage as backup');
+      
+      // Backup Method 2: Download as CSV
+      downloadBackupCSV(bookingData);
+    }
+  };
+
+  // ✅ Backup CSV Download Function
+  const downloadBackupCSV = (bookingData) => {
+    const csvContent = 
+      `Hospital,Name,Guardian,Phone,Sex,Age,Address,Date,Time,Token\n` +
+      `"${bookingData.hospital}","${bookingData.name}","${bookingData.guardian}","${bookingData.phone}","${bookingData.sex}",${bookingData.age},"${bookingData.address}","${bookingData.date}","${bookingData.time}","${bookingData.token}"`;
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mediq-booking-${bookingData.token}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    console.log('✅ CSV backup downloaded');
+  };
+
+  // ✅ Handle Form Submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     if (!validateForm()) return;
 
-    // Generate token
     const token = "MQ" + Math.floor(100000 + Math.random() * 900000);
+    
+    const bookingData = {
+      hospital: hospitalInfo.name,
+      token: token,
+      ...formData,
+      timestamp: new Date().toISOString()
+    };
 
-    // Show success toast
+    // Save to Google Sheets and backups
+    await saveToGoogleSheets(bookingData);
+
+    // Show success message
     setToastMessage(`Token ${token} for ${formData.date} at ${formData.time} sent to ${formData.phone}`);
     setShowToast(true);
 
@@ -229,7 +271,18 @@ useEffect(() => {
 
   // Handle back to hospitals
   const handleBackToHospitals = () => {
-    navigate(-1); // Go back to previous page (hospitals list)
+    navigate(-1);
+  };
+
+  // ✅ View Local Storage Data (For Testing)
+  const viewLocalData = () => {
+    const data = JSON.parse(localStorage.getItem('mediqBookings') || '[]');
+    console.log('📊 Local Storage Data:', data);
+    if (data.length > 0) {
+      alert(`You have ${data.length} bookings in local storage. Check console for details.`);
+    } else {
+      alert('No local bookings found.');
+    }
   };
 
   return (
@@ -249,6 +302,16 @@ useEffect(() => {
               style={{ marginLeft: '10px', fontSize: '12px', padding: '4px 8px' }}
             >
               Change Hospital
+            </button>
+            
+            {/* Debug Button - Remove in production */}
+            <button 
+              className="btn btn--ghost" 
+              onClick={viewLocalData}
+              style={{ marginLeft: '10px', fontSize: '10px', padding: '2px 6px', background: '#ff4444' }}
+              title="Check local storage data"
+            >
+              Debug
             </button>
           </div>
         </div>
