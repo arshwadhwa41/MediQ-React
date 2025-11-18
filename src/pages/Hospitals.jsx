@@ -535,9 +535,13 @@ const Hospitals = () => {
               </div>
               <button 
                 className="book-btn" 
-                onClick={() => handleBookAppointment(hospital)}
-              >
-                Book Appointment
+                onClick={() => navigate('/bookings', { 
+                  state: { 
+                    hospital: hospital.name,
+                    city: cityData.name // YEH IMPORTANT HAI
+                  }
+                })}
+              >Book Appointment
               </button>
             </div>
           </div>

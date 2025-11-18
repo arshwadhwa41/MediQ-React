@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Bookings.css';
 
@@ -20,66 +20,48 @@ const Bookings = () => {
 
   // State for hospital info
   const [hospitalInfo, setHospitalInfo] = useState({
-    name: 'Selected',
-    city: 'Selected'
+    name: 'Loading hospital...',
+    city: 'Loading city...'
   });
 
   // State for UI
-  const [taglineText, setTaglineText] = useState('');
-  const [taglineIndex, setTaglineIndex] = useState(0);
-  const [charIndex, setCharIndex] = useState(0);
-  const [isTyping, setIsTyping] = useState(true);
   const [errors, setErrors] = useState({});
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
-  // Taglines for typing animation
-  const taglines = [
-    "Apni details fill karo appointment book karne ke liye…",
-    "Sahi date & time choose karo, baaki hum sambhaal lenge!",
-    "Fast, simple, reliable — MediQ Appointment Booking"
-  ];
+  // Static tagline
 
-  // Get hospital data from navigation state
+  // Get hospital data from navigation state - IMPROVED
   useEffect(() => {
-    if (location.state && location.state.hospital) {
+    console.log('📍 Checking location state:', location.state);
+    
+    if (location.state) {
+      // Check all possible data formats from hospitals page
+      const hospitalName = location.state.hospital || location.state.hospitalName || location.state.name;
+      const cityName = location.state.city || location.state.cityName || location.state.location;
+      
+      if (hospitalName) {
+        setHospitalInfo({
+          name: hospitalName,
+          city: cityName || 'City information not available'
+        });
+        console.log('✅ Hospital data set:', hospitalName, 'in', cityName);
+      } else {
+        console.warn('❌ No hospital name found in location state');
+        setHospitalInfo({
+          name: 'Hospital selection required',
+          city: 'Please select a hospital first'
+        });
+      }
+    } else {
+      console.warn('❌ No location state received');
       setHospitalInfo({
-        name: location.state.hospital,
-        city: location.state.city || 'Selected City'
+        name: 'No hospital selected',
+        city: 'Please go back and select a hospital'
       });
     }
   }, [location.state]);
-
-  // Typing animation effect
-  useEffect(() => {
-    const typeLoop = () => {
-      const text = taglines[taglineIndex];
-
-      if (isTyping) {
-        if (charIndex < text.length) {
-          setTaglineText(text.substring(0, charIndex + 1));
-          setCharIndex(charIndex + 1);
-          setTimeout(typeLoop, 100);
-        } else {
-          setIsTyping(false);
-          setTimeout(typeLoop, 1000);
-        }
-      } else {
-        if (charIndex > 0) {
-          setTaglineText(text.substring(0, charIndex - 1));
-          setCharIndex(charIndex - 1);
-          setTimeout(typeLoop, 80);
-        } else {
-          setIsTyping(true);
-          setTaglineIndex((taglineIndex + 1) % taglines.length);
-          setTimeout(typeLoop, 700);
-        }
-      }
-    };
-
-    typeLoop();
-  }, [taglineIndex, charIndex, isTyping, taglines]);
 
   // Set minimum date to today
   useEffect(() => {
@@ -110,7 +92,7 @@ const Bookings = () => {
     }
   };
 
-  // Form validation
+  // Form validation - SIMPLIFIED
   const validateForm = () => {
     const newErrors = {};
 
@@ -159,109 +141,122 @@ const Bookings = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // ✅ GOOGLE SHEETS SAVE FUNCTION
+  // ✅ GOOGLE SHEETS INTEGRATION - OPTIMIZED
   const saveToGoogleSheets = async (bookingData) => {
-    // ✅ YAHAN APNA GOOGLE APPS SCRIPT URL DALDO
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxolavooij_269WO8M5Jyaine55WIm1rG3ZlEOsAL5IaQo0PWHrd1xN7EtLspNv-Hag/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw3a3NPfCjO6oJ2bP8R3QkZ7hXvJ9YlLmNpOqRsTdE/exec';
     
     try {
-      console.log('📤 Sending to Google Sheets...', bookingData);
+      console.log('📤 Sending to Google Sheets...');
       
-      const response = await fetch(scriptURL, {
+      const response = await fetch(SCRIPT_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(bookingData)
       });
-      
-      const result = await response.json();
-      console.log('✅ Google Sheets Response:', result);
-      
-      return { success: true, data: result };
+
+      console.log('✅ Google Sheets response received');
+      return { success: true };
       
     } catch (error) {
-      console.error('❌ Google Sheets Error:', error);
+      console.error('❌ Google Sheets error:', error);
       return { success: false, error: error.message };
     }
   };
 
-  // ✅ TOKEN FORM DOWNLOAD FUNCTION (JPG Format)
+  // ✅ TOKEN FORM DOWNLOAD
   const downloadTokenForm = (bookingData) => {
-    // Create a canvas for the token form
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    
-    // Set canvas size
-    canvas.width = 800;
-    canvas.height = 600;
-    
-    // Background
-    ctx.fillStyle = '#f8faff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Header
-    ctx.fillStyle = '#1e66ff';
-    ctx.fillRect(0, 0, canvas.width, 80);
-    
-    // Title
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 28px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('MEDIQ APPOINTMENT TOKEN', canvas.width/2, 50);
-    
-    // Token Number
-    ctx.fillStyle = '#2fbf4a';
-    ctx.font = 'bold 36px Arial';
-    ctx.fillText(`TOKEN: ${bookingData.token}`, canvas.width/2, 130);
-    
-    // Patient Details
-    ctx.fillStyle = '#333333';
-    ctx.font = '20px Arial';
-    ctx.textAlign = 'left';
-    
-    let yPosition = 200;
-    const details = [
-      `Hospital: ${bookingData.hospital}`,
-      `Patient Name: ${bookingData.name}`,
-      `Guardian: ${bookingData.guardian}`,
-      `Phone: ${bookingData.phone}`,
-      `Sex: ${bookingData.sex}`,
-      `Age: ${bookingData.age}`,
-      `Appointment Date: ${bookingData.date}`,
-      `Appointment Time: ${bookingData.time}`,
-      `Address: ${bookingData.address}`
-    ];
-    
-    details.forEach(detail => {
-      ctx.fillText(detail, 50, yPosition);
-      yPosition += 40;
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Set canvas size
+      canvas.width = 800;
+      canvas.height = 600;
+      
+      // Background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Header
+      ctx.fillStyle = '#1e66ff';
+      ctx.fillRect(0, 0, canvas.width, 100);
+      
+      // Title
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 24px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('MEDIQ APPOINTMENT TOKEN', canvas.width/2, 45);
+      
+      // Token Number
+      ctx.fillStyle = '#2fbf4a';
+      ctx.font = 'bold 20px Arial';
+      ctx.fillText(`TOKEN: ${bookingData.token}`, canvas.width/2, 75);
+      
+      // Hospital Info
+      ctx.fillStyle = '#333333';
+      ctx.font = 'bold 18px Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText('Hospital Details:', 50, 130);
+      ctx.font = '16px Arial';
+      ctx.fillText(`Hospital: ${bookingData.hospital}`, 70, 160);
+      ctx.fillText(`City: ${bookingData.city}`, 70, 185);
+      
+      // Patient Details Section
+      ctx.font = 'bold 18px Arial';
+      ctx.fillText('Patient Details:', 50, 220);
+      
+      // Details List
+      ctx.font = '16px Arial';
+      let yPosition = 250;
+      const details = [
+        `Name: ${bookingData.name}`,
+        `Guardian: ${bookingData.guardian}`,
+        `Phone: ${bookingData.phone}`,
+        `Sex: ${bookingData.sex}`,
+        `Age: ${bookingData.age} years`,
+        `Appointment Date: ${bookingData.date}`,
+        `Appointment Time: ${bookingData.time}`,
+        `Address: ${bookingData.address}`
+      ];
+      
+      details.forEach(detail => {
+        ctx.fillText(detail, 70, yPosition);
+        yPosition += 30;
+      });
+      
+      // Footer
+      ctx.fillStyle = '#1e66ff';
+      ctx.font = '14px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Thank you for choosing MediQ - Your Health, Our Priority', canvas.width/2, canvas.height - 40);
+      ctx.fillText('© 2025 MediQ Healthcare Solutions', canvas.width/2, canvas.height - 20);
+      
+      // Download as JPG
+      setTimeout(() => {
+        const link = document.createElement('a');
+        link.download = `mediq-token-${bookingData.token}.jpg`;
+        link.href = canvas.toDataURL('image/jpeg', 1.0);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log('✅ Token form downloaded');
+        resolve();
+      }, 500);
     });
-    
-    // Footer
-    ctx.fillStyle = '#1e66ff';
-    ctx.font = '16px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('© 2025 MediQ - Your Health, Our Priority', canvas.width/2, canvas.height - 30);
-    
-    // Download as JPG
-    const link = document.createElement('a');
-    link.download = `mediq-token-${bookingData.token}.jpg`;
-    link.href = canvas.toDataURL('image/jpeg', 0.9);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    console.log('✅ Token form downloaded as JPG');
   };
 
   // ✅ BACKUP TO LOCAL STORAGE
   const saveToLocalStorage = (bookingData) => {
     const existingBookings = JSON.parse(localStorage.getItem('mediqBookings') || '[]');
-    existingBookings.push({
+    const newBooking = {
       ...bookingData,
+      id: Date.now(),
       timestamp: new Date().toISOString()
-    });
+    };
+    existingBookings.push(newBooking);
     localStorage.setItem('mediqBookings', JSON.stringify(existingBookings));
     console.log('✅ Data saved to local storage');
   };
@@ -269,50 +264,52 @@ const Bookings = () => {
   // ✅ MAIN FORM SUBMISSION HANDLER
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    console.log('🔄 Form submission started...');
+    
+    if (!validateForm()) {
+      console.log('❌ Form validation failed');
+      return;
+    }
 
     setIsSaving(true);
     const token = "MQ" + Math.floor(100000 + Math.random() * 900000);
     
     const bookingData = {
       hospital: hospitalInfo.name,
+      city: hospitalInfo.city,
       token: token,
       ...formData,
       timestamp: new Date().toISOString()
     };
 
+    console.log('📦 Booking data:', bookingData);
+
+    let sheetsSuccess = false;
+
     try {
-      // 1. Google Sheets mein save karo
+      // 1. Try Google Sheets
+      console.log('🔄 Saving to Google Sheets...');
       const sheetsResult = await saveToGoogleSheets(bookingData);
+      sheetsSuccess = sheetsResult.success;
       
-      if (sheetsResult.success) {
-        console.log('✅ Google Sheets mein save ho gaya!');
-        
-        // 2. Token form download karo
-        downloadTokenForm(bookingData);
-        
-        // 3. Success message show karo
-        setToastMessage(`✅ Token ${token} booked! Form downloaded & data saved to Google Sheets`);
+      // 2. Download token form
+      console.log('🔄 Downloading token form...');
+      await downloadTokenForm(bookingData);
+      
+      // 3. Save to local storage
+      console.log('🔄 Saving to local storage...');
+      saveToLocalStorage(bookingData);
+
+      // 4. Show success message
+      if (sheetsSuccess) {
+        setToastMessage(`Appointment booked successfully! Token: ${token}. Data saved to Google Sheets.`);
       } else {
-        console.log('⚠️ Google Sheets failed, using backup...');
-        
-        // Backup: Local storage
-        saveToLocalStorage(bookingData);
-        
-        // Token form download karo
-        downloadTokenForm(bookingData);
-        
-        setToastMessage(`✅ Token ${token} booked! Form downloaded (Local backup)`);
+        setToastMessage(`Appointment booked successfully! Token: ${token}. Data saved locally.`);
       }
       
     } catch (error) {
       console.error('❌ Submission error:', error);
-      
-      // Emergency backup
-      saveToLocalStorage(bookingData);
-      downloadTokenForm(bookingData);
-      
-      setToastMessage(`✅ Token ${token} booked! Form downloaded (Emergency backup)`);
+      setToastMessage(`Appointment booked! Token: ${token}. Error in data saving.`);
     }
 
     // UI Updates
@@ -323,7 +320,7 @@ const Bookings = () => {
     setTimeout(() => {
       setShowToast(false);
       setIsSaving(false);
-    }, 5000);
+    }, 6000);
 
     setTimeout(() => {
       setFormData({
@@ -359,44 +356,25 @@ const Bookings = () => {
     navigate(-1);
   };
 
-  // Debug function
-  const viewLocalData = () => {
-    const data = JSON.parse(localStorage.getItem('mediqBookings') || '[]');
-    console.log('📊 Local Storage Data:', data);
-    if (data.length > 0) {
-      alert(`You have ${data.length} bookings in local storage. Check console for details.`);
-    } else {
-      alert('No local bookings found.');
-    }
-  };
-
   return (
     <div className="bookings-page">
       {/* ===== Topbar / Tagline ===== */}
       <header className="topbar">
         <div className="topbar__inner">
-          <h1 id="tagline-text" aria-live="polite">{taglineText}</h1>
+          <div className="tagline-section">
+            <h1>"Complete your details to book your OPD visit."</h1>
+          </div>
 
-          <div className="chosen-hospital">
-            <span className="chip">
-              Hospital: <strong>{hospitalInfo.name}</strong>
-            </span>
+          <div className="hospital-section">
+            <div className="hospital-info">
+              <div className="hospital-name">Hospital: {hospitalInfo.name}</div>
+              <div className="city-name">City: {hospitalInfo.city}</div>
+            </div>
             <button 
-              className="btn btn--ghost" 
+              className="btn btn--ghost change-hospital-btn" 
               onClick={handleBackToHospitals}
-              style={{ marginLeft: '10px', fontSize: '12px', padding: '4px 8px' }}
             >
               Change Hospital
-            </button>
-            
-            {/* Debug Button */}
-            <button 
-              className="btn btn--ghost" 
-              onClick={viewLocalData}
-              style={{ marginLeft: '10px', fontSize: '10px', padding: '2px 6px', background: '#ff4444' }}
-              title="Check local storage data"
-            >
-              Debug
             </button>
           </div>
         </div>
@@ -421,7 +399,7 @@ const Bookings = () => {
                   onChange={handleInputChange}
                   disabled={isSaving}
                 />
-                <label htmlFor="name" className="label">Full Name*</label>
+                <label htmlFor="name" className="label">Full Name *</label>
                 {errors.name && <small className="error">{errors.name}</small>}
               </div>
 
@@ -437,7 +415,7 @@ const Bookings = () => {
                   onChange={handleInputChange}
                   disabled={isSaving}
                 />
-                <label htmlFor="guardian" className="label">Father/Husband Name*</label>
+                <label htmlFor="guardian" className="label">Father/Husband Name *</label>
                 {errors.guardian && <small className="error">{errors.guardian}</small>}
               </div>
 
@@ -454,7 +432,7 @@ const Bookings = () => {
                   onChange={handleInputChange}
                   disabled={isSaving}
                 />
-                <label htmlFor="phone" className="label">Phone Number (10 digits)*</label>
+                <label htmlFor="phone" className="label">Phone Number (10 digits) *</label>
                 {errors.phone && <small className="error">{errors.phone}</small>}
               </div>
 
@@ -474,7 +452,7 @@ const Bookings = () => {
                   <option value="Other">Other</option>
                   <option value="Prefer not to say">Prefer not to say</option>
                 </select>
-                <label htmlFor="sex" className="label label--select">Sex*</label>
+                <label htmlFor="sex" className="label label--select">Sex *</label>
                 {errors.sex && <small className="error">{errors.sex}</small>}
               </div>
 
@@ -492,7 +470,7 @@ const Bookings = () => {
                   onChange={handleInputChange}
                   disabled={isSaving}
                 />
-                <label htmlFor="age" className="label">Age*</label>
+                <label htmlFor="age" className="label">Age *</label>
                 {errors.age && <small className="error">{errors.age}</small>}
               </div>
 
@@ -508,7 +486,7 @@ const Bookings = () => {
                   onChange={handleInputChange}
                   disabled={isSaving}
                 ></textarea>
-                <label htmlFor="address" className="label">Full Address*</label>
+                <label htmlFor="address" className="label">Full Address *</label>
                 {errors.address && <small className="error">{errors.address}</small>}
               </div>
             </div>
@@ -527,7 +505,7 @@ const Bookings = () => {
                   onChange={handleInputChange}
                   disabled={isSaving}
                 />
-                <label htmlFor="date" className="label">Preferred Date*</label>
+                <label htmlFor="date" className="label">Preferred Date *</label>
                 {errors.date && <small className="error">{errors.date}</small>}
               </div>
 
@@ -546,7 +524,7 @@ const Bookings = () => {
                   onChange={handleInputChange}
                   disabled={isSaving}
                 />
-                <label htmlFor="time" className="label">Preferred Time (10:00–17:00)*</label>
+                <label htmlFor="time" className="label">Preferred Time (10:00–17:00) *</label>
                 {errors.time && <small className="error">{errors.time}</small>}
               </div>
             </div>
@@ -557,7 +535,7 @@ const Bookings = () => {
                 className="btn btn--primary" 
                 disabled={isSaving}
               >
-                {isSaving ? 'Saving...' : 'Book Appointment'}
+                {isSaving ? 'Saving Appointment...' : 'Book Appointment'}
               </button>
               <button 
                 type="button" 
@@ -565,7 +543,7 @@ const Bookings = () => {
                 onClick={handleReset}
                 disabled={isSaving}
               >
-                Reset
+                Reset Form
               </button>
             </div>
           </form>
@@ -576,16 +554,16 @@ const Bookings = () => {
             <ul className="review-list">
               <li><span>Hospital</span><strong>{hospitalInfo.name}</strong></li>
               <li><span>City</span><strong>{hospitalInfo.city}</strong></li>
-              <li><span>Patient</span><strong>{formData.name || "—"}</strong></li>
-              <li><span>Guardian</span><strong>{formData.guardian || "—"}</strong></li>
-              <li><span>Phone</span><strong>{formData.phone || "—"}</strong></li>
+              <li><span>Patient Name</span><strong>{formData.name || "—"}</strong></li>
+              <li><span>Guardian Name</span><strong>{formData.guardian || "—"}</strong></li>
+              <li><span>Phone Number</span><strong>{formData.phone || "—"}</strong></li>
               <li><span>Sex</span><strong>{formData.sex || "—"}</strong></li>
               <li><span>Age</span><strong>{formData.age || "—"}</strong></li>
               <li className="addr"><span>Address</span><strong>{formData.address || "—"}</strong></li>
-              <li><span>Date</span><strong>{formData.date || "—"}</strong></li>
-              <li><span>Time</span><strong>{formData.time || "—"}</strong></li>
+              <li><span>Appointment Date</span><strong>{formData.date || "—"}</strong></li>
+              <li><span>Appointment Time</span><strong>{formData.time || "—"}</strong></li>
             </ul>
-            <div className="note">Please verify your details before booking.</div>
+            <div className="note">Please verify all details before booking. Token form will download automatically.</div>
           </aside>
         </section>
       </main>
@@ -593,7 +571,7 @@ const Bookings = () => {
       {/* ===== Toast ===== */}
       <div className={`toast ${showToast ? 'show' : ''}`} role="status" aria-live="polite">
         <div className="toast__inner">
-          <span className="tick">✔</span>
+          <span className="tick">✓</span>
           <div>
             <strong>Appointment Booked Successfully!</strong>
             <div>{toastMessage}</div>
