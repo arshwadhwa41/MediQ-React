@@ -32,6 +32,7 @@ const Bookings = () => {
   const [errors, setErrors] = useState({});
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   // Taglines for typing animation
   const taglines = [
@@ -158,12 +159,14 @@ const Bookings = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // ✅ WORKING Google Sheets Function
+  // ✅ GOOGLE SHEETS SAVE FUNCTION
   const saveToGoogleSheets = async (bookingData) => {
-    // Method 1: Direct Google Apps Script URL (Most Reliable)
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbwY7Qd9WQ6Q2VZ5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q/exec';
+    // ✅ YAHAN APNA GOOGLE APPS SCRIPT URL DALDO
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxolavooij_269WO8M5Jyaine55WIm1rG3ZlEOsAL5IaQo0PWHrd1xN7EtLspNv-Hag/exec';
     
     try {
+      console.log('📤 Sending to Google Sheets...', bookingData);
+      
       const response = await fetch(scriptURL, {
         method: 'POST',
         headers: {
@@ -172,49 +175,103 @@ const Bookings = () => {
         body: JSON.stringify(bookingData)
       });
       
-      const result = await response.text();
+      const result = await response.json();
       console.log('✅ Google Sheets Response:', result);
+      
+      return { success: true, data: result };
+      
     } catch (error) {
-      console.log('❌ Google Sheets failed, trying backup methods...');
-      
-      // Backup Method: Local Storage
-      const existingBookings = JSON.parse(localStorage.getItem('mediqBookings') || '[]');
-      existingBookings.push({
-        ...bookingData,
-        timestamp: new Date().toISOString()
-      });
-      localStorage.setItem('mediqBookings', JSON.stringify(existingBookings));
-      console.log('✅ Data saved to local storage as backup');
-      
-      // Backup Method 2: Download as CSV
-      downloadBackupCSV(bookingData);
+      console.error('❌ Google Sheets Error:', error);
+      return { success: false, error: error.message };
     }
   };
 
-  // ✅ Backup CSV Download Function
-  const downloadBackupCSV = (bookingData) => {
-    const csvContent = 
-      `Hospital,Name,Guardian,Phone,Sex,Age,Address,Date,Time,Token\n` +
-      `"${bookingData.hospital}","${bookingData.name}","${bookingData.guardian}","${bookingData.phone}","${bookingData.sex}",${bookingData.age},"${bookingData.address}","${bookingData.date}","${bookingData.time}","${bookingData.token}"`;
+  // ✅ TOKEN FORM DOWNLOAD FUNCTION (JPG Format)
+  const downloadTokenForm = (bookingData) => {
+    // Create a canvas for the token form
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
     
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `mediq-booking-${bookingData.token}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+    // Set canvas size
+    canvas.width = 800;
+    canvas.height = 600;
     
-    console.log('✅ CSV backup downloaded');
+    // Background
+    ctx.fillStyle = '#f8faff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Header
+    ctx.fillStyle = '#1e66ff';
+    ctx.fillRect(0, 0, canvas.width, 80);
+    
+    // Title
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 28px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('MEDIQ APPOINTMENT TOKEN', canvas.width/2, 50);
+    
+    // Token Number
+    ctx.fillStyle = '#2fbf4a';
+    ctx.font = 'bold 36px Arial';
+    ctx.fillText(`TOKEN: ${bookingData.token}`, canvas.width/2, 130);
+    
+    // Patient Details
+    ctx.fillStyle = '#333333';
+    ctx.font = '20px Arial';
+    ctx.textAlign = 'left';
+    
+    let yPosition = 200;
+    const details = [
+      `Hospital: ${bookingData.hospital}`,
+      `Patient Name: ${bookingData.name}`,
+      `Guardian: ${bookingData.guardian}`,
+      `Phone: ${bookingData.phone}`,
+      `Sex: ${bookingData.sex}`,
+      `Age: ${bookingData.age}`,
+      `Appointment Date: ${bookingData.date}`,
+      `Appointment Time: ${bookingData.time}`,
+      `Address: ${bookingData.address}`
+    ];
+    
+    details.forEach(detail => {
+      ctx.fillText(detail, 50, yPosition);
+      yPosition += 40;
+    });
+    
+    // Footer
+    ctx.fillStyle = '#1e66ff';
+    ctx.font = '16px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('© 2025 MediQ - Your Health, Our Priority', canvas.width/2, canvas.height - 30);
+    
+    // Download as JPG
+    const link = document.createElement('a');
+    link.download = `mediq-token-${bookingData.token}.jpg`;
+    link.href = canvas.toDataURL('image/jpeg', 0.9);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    console.log('✅ Token form downloaded as JPG');
   };
 
-  // ✅ Handle Form Submission
+  // ✅ BACKUP TO LOCAL STORAGE
+  const saveToLocalStorage = (bookingData) => {
+    const existingBookings = JSON.parse(localStorage.getItem('mediqBookings') || '[]');
+    existingBookings.push({
+      ...bookingData,
+      timestamp: new Date().toISOString()
+    });
+    localStorage.setItem('mediqBookings', JSON.stringify(existingBookings));
+    console.log('✅ Data saved to local storage');
+  };
+
+  // ✅ MAIN FORM SUBMISSION HANDLER
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
+    setIsSaving(true);
     const token = "MQ" + Math.floor(100000 + Math.random() * 900000);
     
     const bookingData = {
@@ -224,22 +281,50 @@ const Bookings = () => {
       timestamp: new Date().toISOString()
     };
 
-    // Save to Google Sheets and backups
-    await saveToGoogleSheets(bookingData);
+    try {
+      // 1. Google Sheets mein save karo
+      const sheetsResult = await saveToGoogleSheets(bookingData);
+      
+      if (sheetsResult.success) {
+        console.log('✅ Google Sheets mein save ho gaya!');
+        
+        // 2. Token form download karo
+        downloadTokenForm(bookingData);
+        
+        // 3. Success message show karo
+        setToastMessage(`✅ Token ${token} booked! Form downloaded & data saved to Google Sheets`);
+      } else {
+        console.log('⚠️ Google Sheets failed, using backup...');
+        
+        // Backup: Local storage
+        saveToLocalStorage(bookingData);
+        
+        // Token form download karo
+        downloadTokenForm(bookingData);
+        
+        setToastMessage(`✅ Token ${token} booked! Form downloaded (Local backup)`);
+      }
+      
+    } catch (error) {
+      console.error('❌ Submission error:', error);
+      
+      // Emergency backup
+      saveToLocalStorage(bookingData);
+      downloadTokenForm(bookingData);
+      
+      setToastMessage(`✅ Token ${token} booked! Form downloaded (Emergency backup)`);
+    }
 
-    // Show success message
-    setToastMessage(`Token ${token} for ${formData.date} at ${formData.time} sent to ${formData.phone}`);
+    // UI Updates
     setShowToast(true);
-
-    // Scroll to top
     window.scrollTo({ top: 0, behavior: "smooth" });
 
-    // Hide toast after delay
+    // Reset after delay
     setTimeout(() => {
       setShowToast(false);
-    }, 4200);
+      setIsSaving(false);
+    }, 5000);
 
-    // Reset form after delay
     setTimeout(() => {
       setFormData({
         name: '',
@@ -251,7 +336,7 @@ const Bookings = () => {
         date: '',
         time: ''
       });
-    }, 800);
+    }, 1000);
   };
 
   // Handle form reset
@@ -274,7 +359,7 @@ const Bookings = () => {
     navigate(-1);
   };
 
-  // ✅ View Local Storage Data (For Testing)
+  // Debug function
   const viewLocalData = () => {
     const data = JSON.parse(localStorage.getItem('mediqBookings') || '[]');
     console.log('📊 Local Storage Data:', data);
@@ -304,7 +389,7 @@ const Bookings = () => {
               Change Hospital
             </button>
             
-            {/* Debug Button - Remove in production */}
+            {/* Debug Button */}
             <button 
               className="btn btn--ghost" 
               onClick={viewLocalData}
@@ -334,6 +419,7 @@ const Bookings = () => {
                   placeholder=" "
                   value={formData.name}
                   onChange={handleInputChange}
+                  disabled={isSaving}
                 />
                 <label htmlFor="name" className="label">Full Name*</label>
                 {errors.name && <small className="error">{errors.name}</small>}
@@ -349,6 +435,7 @@ const Bookings = () => {
                   placeholder=" "
                   value={formData.guardian}
                   onChange={handleInputChange}
+                  disabled={isSaving}
                 />
                 <label htmlFor="guardian" className="label">Father/Husband Name*</label>
                 {errors.guardian && <small className="error">{errors.guardian}</small>}
@@ -365,6 +452,7 @@ const Bookings = () => {
                   pattern="^[0-9]{10}$"
                   value={formData.phone}
                   onChange={handleInputChange}
+                  disabled={isSaving}
                 />
                 <label htmlFor="phone" className="label">Phone Number (10 digits)*</label>
                 {errors.phone && <small className="error">{errors.phone}</small>}
@@ -378,6 +466,7 @@ const Bookings = () => {
                   required
                   value={formData.sex}
                   onChange={handleInputChange}
+                  disabled={isSaving}
                 >
                   <option value="" disabled>Select</option>
                   <option value="Male">Male</option>
@@ -401,6 +490,7 @@ const Bookings = () => {
                   max="120"
                   value={formData.age}
                   onChange={handleInputChange}
+                  disabled={isSaving}
                 />
                 <label htmlFor="age" className="label">Age*</label>
                 {errors.age && <small className="error">{errors.age}</small>}
@@ -416,6 +506,7 @@ const Bookings = () => {
                   rows="3"
                   value={formData.address}
                   onChange={handleInputChange}
+                  disabled={isSaving}
                 ></textarea>
                 <label htmlFor="address" className="label">Full Address*</label>
                 {errors.address && <small className="error">{errors.address}</small>}
@@ -434,6 +525,7 @@ const Bookings = () => {
                   placeholder=" "
                   value={formData.date}
                   onChange={handleInputChange}
+                  disabled={isSaving}
                 />
                 <label htmlFor="date" className="label">Preferred Date*</label>
                 {errors.date && <small className="error">{errors.date}</small>}
@@ -452,6 +544,7 @@ const Bookings = () => {
                   step="900"
                   value={formData.time}
                   onChange={handleInputChange}
+                  disabled={isSaving}
                 />
                 <label htmlFor="time" className="label">Preferred Time (10:00–17:00)*</label>
                 {errors.time && <small className="error">{errors.time}</small>}
@@ -459,8 +552,21 @@ const Bookings = () => {
             </div>
 
             <div className="actions">
-              <button type="submit" className="btn btn--primary">Book Appointment</button>
-              <button type="button" className="btn btn--ghost" onClick={handleReset}>Reset</button>
+              <button 
+                type="submit" 
+                className="btn btn--primary" 
+                disabled={isSaving}
+              >
+                {isSaving ? 'Saving...' : 'Book Appointment'}
+              </button>
+              <button 
+                type="button" 
+                className="btn btn--ghost" 
+                onClick={handleReset}
+                disabled={isSaving}
+              >
+                Reset
+              </button>
             </div>
           </form>
 
@@ -489,7 +595,7 @@ const Bookings = () => {
         <div className="toast__inner">
           <span className="tick">✔</span>
           <div>
-            <strong>Appointment Request Sent!</strong>
+            <strong>Appointment Booked Successfully!</strong>
             <div>{toastMessage}</div>
           </div>
         </div>
